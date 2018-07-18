@@ -3,10 +3,10 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.shortcuts import render
 from django.views.generic.base import View
-
-from .form import LoginForm
+from django.contrib.auth.hashers import make_password
+from .form import LoginForm, RegisterForm
 from .models import UserProfile
-
+from utils.email_send import send_register_eamil
 from .form import LoginForm
 
 class LoginView(View):
@@ -50,3 +50,31 @@ class CustomBackend(ModelBackend):
                 return user
         except Exception as e:
             return None
+
+class RegisterView(View):
+    '''用户注册'''
+    def get(self,request):
+        register_form = RegisterForm()
+        return render(request,'register.html',{'register_form':register_form})
+
+    def post(self,request):
+        register_form = RegisterForm(request.POST)
+        if register_form.is_valid():
+            user_name = request.POST.get('email', None)
+            # 如果用户已存在，则提示错误信息
+            if UserProfile.objects.filter(email = user_name):
+                return render(request, 'register.html', {'register_form':register_form,'msg': '用户已存在'})
+
+            pass_word = request.POST.get('password', None)
+            # 实例化一个user_profile对象
+            user_profile = UserProfile()
+            user_profile.username = user_name
+            user_profile.email = user_name
+            user_profile.is_active = False
+            # 对保存到数据库的密码加密
+            user_profile.password = make_password(pass_word)
+            user_profile.save()
+            send_register_eamil(user_name,'register')
+            return render(request,'login.html')
+        else:
+            return render(request,'register.html',{'register_form':register_form})
