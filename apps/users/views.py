@@ -55,7 +55,7 @@ class RegisterView(View):
     '''用户注册'''
     def get(self,request):
         register_form = RegisterForm()
-        return render(request,'register.html',{'register_form':register_form})
+        return render(request, 'register.html', {'register_form':register_form})
 
     def post(self,request):
         register_form = RegisterForm(request.POST)
@@ -76,5 +76,5 @@ class RegisterView(View):
             user_profile.save()
             send_register_eamil(user_name,'register')
             return render(request,'login.html')
-        else:
+        else:z
             return render(request,'register.html',{'register_form':register_form})
