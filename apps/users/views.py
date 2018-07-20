@@ -7,6 +7,7 @@ from django.contrib.auth.hashers import make_password
 from .form import LoginForm, RegisterForm
 from .models import UserProfile
 from utils.email_send import send_register_eamil
+import utils
 from .form import LoginForm
 
 class LoginView(View):
@@ -76,5 +77,5 @@ class RegisterView(View):
             user_profile.save()
             send_register_eamil(user_name,'register')
             return render(request,'login.html')
-        else:z
+        else:
             return render(request,'register.html',{'register_form':register_form})
