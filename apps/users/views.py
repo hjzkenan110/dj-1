@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 from .form import LoginForm, RegisterForm
-from .models import UserProfile
+from .models import UserProfile, EmailVerifyRecord
 from utils.email_send import send_register_eamil
 import utils
 from .form import LoginForm
@@ -79,3 +79,23 @@ class RegisterView(View):
             return render(request,'login.html')
         else:
             return render(request,'register.html',{'register_form':register_form})
+
+
+class ActiveUserView(View):
+    def get(self, request, active_code):
+        # 查询邮箱验证记录是否存在
+        all_record = EmailVerifyRecord.objects.filter(code = active_code)
+
+        if all_record:
+            for record in all_record:
+                # 获取到对应的邮箱
+                email = record.email
+                # 查找到邮箱对应的user
+                user = UserProfile.objects.get(email=email)
+                user.is_active = True
+                user.save()
+         # 验证码不对的时候跳转到激活失败页面
+        else:
+            return render(request,'active_fail.html')
+        # 激活成功跳转到登录页面
+        return render(request, "login.html", )
